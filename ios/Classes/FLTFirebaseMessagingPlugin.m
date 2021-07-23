@@ -274,6 +274,52 @@ NSString *const kMessagingPresentationOptionsUserDefaults =
 
 #pragma mark - UNUserNotificationCenter Delegate Methods
 
+- (NSDictionary*)rebuildGimbalNotification:(NSDictionary*)userInfo {
+    NSArray* userInfoKeys = [userInfo allKeys];
+    if([userInfoKeys containsObject:@"ATTRS"] && [userInfoKeys containsObject:@"TL"]) {
+        NSString* title = [userInfo objectForKey:@"TL"];
+        if(title == nil || [title isKindOfClass:[NSNull class]]) {
+            title = [NSString stringWithFormat:@""];;
+        }
+        if([userInfoKeys containsObject:@"aps"] && [[userInfo objectForKey:@"aps"] isKindOfClass:[NSDictionary class]]) {
+            NSDictionary* apsValue = [userInfo objectForKey:@"aps"];
+            if([[apsValue allKeys]containsObject:@"alert"]) {
+                NSString* bodyValue = [apsValue objectForKey:@"alert"];
+                if(bodyValue == nil || [bodyValue isKindOfClass:[NSNull class]]) {
+                    bodyValue = [NSString stringWithFormat:@""];
+                }
+                NSDictionary* alertDictionary = [NSDictionary dictionaryWithObjectsAndKeys:[NSDictionary dictionaryWithObjectsAndKeys:title, @"title", bodyValue, @"body", nil], @"alert", nil];
+                NSMutableDictionary* userInfoMutableDictionary = [NSMutableDictionary dictionaryWithDictionary:userInfo];
+                [userInfoMutableDictionary setValue:alertDictionary forKey:@"aps"];
+                [userInfoMutableDictionary setValue:@"GimbalType" forKey:@"kNotificationChannelType"];
+                return userInfoMutableDictionary;
+            }
+        }
+    }
+    return nil;
+}
+
+- (NSDictionary*)rebuildUserInfo:(UNNotification *)notification API_AVAILABLE(ios(10.0)) {
+    NSDictionary *userInfo = notification.request.content.userInfo;
+    //Receive Gimbal notification
+    NSArray* userInfoKeys = [userInfo allKeys];
+    if([userInfoKeys containsObject:@"ATTRS"] && [userInfoKeys containsObject:@"TL"]) {
+        return [self rebuildGimbalNotification:userInfo];
+    } else if ([userInfoKeys containsObject:@"GMBL_COMMUNICATION"]) {
+        //Receive Gimbal place notification
+        NSString* bodyValue = notification.request.content.body.description;
+        if(bodyValue == nil || [bodyValue isKindOfClass:[NSNull class]]) {
+            bodyValue = [NSString stringWithFormat:@""];
+        }
+        NSMutableDictionary* userInfoMutableDictionary = [NSMutableDictionary dictionaryWithDictionary:userInfo];
+        NSDictionary* alertDictionary = [NSDictionary dictionaryWithObjectsAndKeys:[NSDictionary dictionaryWithObjectsAndKeys:@"", @"title", bodyValue, @"body", nil], @"alert", nil];
+        [userInfoMutableDictionary setValue:alertDictionary forKey:@"aps"];
+        [userInfoMutableDictionary setValue:@"GimbalType" forKey:@"kNotificationChannelType"];
+        return userInfoMutableDictionary;
+    }
+    return nil;
+}
+
 #ifdef __FF_NOTIFICATIONS_SUPPORTED_PLATFORM
 // Called when a notification is received whilst the app is in the foreground.
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center
@@ -281,11 +327,14 @@ NSString *const kMessagingPresentationOptionsUserDefaults =
          withCompletionHandler:
              (void (^)(UNNotificationPresentationOptions options))completionHandler
     API_AVAILABLE(macos(10.14), ios(10.0)) {
+  NSDictionary *gimbalNotificationUserInfo = [self rebuildUserInfo:notification];
   // We only want to handle FCM notifications.
-  if (notification.request.content.userInfo[@"gcm.message_id"]) {
+  if (notification.request.content.userInfo[@"gcm.message_id"] || gimbalNotificationUserInfo != nil) {
     NSDictionary *notificationDict =
         [FLTFirebaseMessagingPlugin NSDictionaryFromUNNotification:notification];
-
+    if(gimbalNotificationUserInfo != nil) {
+        notificationDict = gimbalNotificationUserInfo;
+    }
     // Don't send an event if contentAvailable is true - application:didReceiveRemoteNotification
     // will send the event for us, we don't want to duplicate them.
     if (!notificationDict[@"contentAvailable"]) {
@@ -324,10 +373,14 @@ NSString *const kMessagingPresentationOptionsUserDefaults =
              withCompletionHandler:(void (^)(void))completionHandler
     API_AVAILABLE(macos(10.14), ios(10.0)) {
   NSDictionary *remoteNotification = response.notification.request.content.userInfo;
+  NSDictionary *gimbalNotificationUserInfo = [self rebuildUserInfo:response.notification];
   // We only want to handle FCM notifications.
-  if (remoteNotification[@"gcm.message_id"]) {
+  if (remoteNotification[@"gcm.message_id"] || gimbalNotificationUserInfo != nil) {
     NSDictionary *notificationDict =
         [FLTFirebaseMessagingPlugin remoteMessageUserInfoToDict:remoteNotification];
+    if (gimbalNotificationUserInfo != nil) {
+        notificationDict = gimbalNotificationUserInfo;
+    }
     [_channel invokeMethod:@"Messaging#onMessageOpenedApp" arguments:notificationDict];
     @synchronized(self) {
       _initialNotification = notificationDict;
