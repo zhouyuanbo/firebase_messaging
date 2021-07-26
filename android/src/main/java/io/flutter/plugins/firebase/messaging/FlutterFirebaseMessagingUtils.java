@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import androidx.annotation.NonNull;
+import android.content.Intent;
 
 class FlutterFirebaseMessagingUtils {
   static final String IS_AUTO_INIT_ENABLED = "isAutoInitEnabled";
@@ -23,6 +25,7 @@ class FlutterFirebaseMessagingUtils {
   static final String EXTRA_REMOTE_MESSAGE = "notification";
   static final String ACTION_TOKEN = "io.flutter.plugins.firebase.messaging.TOKEN";
   static final String EXTRA_TOKEN = "token";
+  static final String GIMBAL_FLAG = "GIMBAL_FLAG";
   static final int JOB_ID = 2020;
   private static final String KEY_COLLAPSE_KEY = "collapseKey";
   private static final String KEY_DATA = "data";
@@ -32,6 +35,32 @@ class FlutterFirebaseMessagingUtils {
   private static final String KEY_SENT_TIME = "sentTime";
   private static final String KEY_TO = "to";
   private static final String KEY_TTL = "ttl";
+
+  @NonNull
+  private Map<String, Object> parseGimbalMessage(Intent intent) {
+    Map<String, Object> content = new HashMap<>();
+
+    Map<String, Object> notificationMap = new HashMap<>();
+
+    String title = intent.getStringExtra("title");
+    notificationMap.put("title", title);
+
+    String body = intent.getStringExtra("body");
+    notificationMap.put("body", body);
+    RemoteMessage message =
+            intent.getParcelableExtra(FlutterFirebaseMessagingService.EXTRA_REMOTE_MESSAGE);
+
+    if (message != null){
+      for (String s : message.getData().keySet()) {
+        Log.d("TAG","FirebaseMessagePlugin--key=" + s);
+      }
+      content.put("data", message.getData());
+    }
+
+    content.put("notification", notificationMap);
+
+    return content;
+  }
 
   static Map<String, Object> remoteMessageToMap(RemoteMessage remoteMessage) {
     Map<String, Object> messageMap = new HashMap<>();
