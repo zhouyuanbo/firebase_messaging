@@ -288,8 +288,8 @@ NSString *const kMessagingPresentationOptionsUserDefaults =
                 if(bodyValue == nil || [bodyValue isKindOfClass:[NSNull class]]) {
                     bodyValue = [NSString stringWithFormat:@""];
                 }
-                NSDictionary* alertDictionary = [NSDictionary dictionaryWithObjectsAndKeys:[NSDictionary dictionaryWithObjectsAndKeys:title, @"title", bodyValue, @"body", nil], @"alert", nil];
                 NSMutableDictionary* userInfoMutableDictionary = [NSMutableDictionary dictionaryWithDictionary:userInfo];
+                NSDictionary* alertDictionary = [NSDictionary dictionaryWithObjectsAndKeys:[NSDictionary dictionaryWithObjectsAndKeys:title, @"title", bodyValue, @"body", nil], @"alert", nil];
                 [userInfoMutableDictionary setValue:alertDictionary forKey:@"aps"];
                 [userInfoMutableDictionary setValue:@"GimbalType" forKey:@"kNotificationChannelType"];
                 return userInfoMutableDictionary;
@@ -333,7 +333,7 @@ NSString *const kMessagingPresentationOptionsUserDefaults =
     NSDictionary *notificationDict =
         [FLTFirebaseMessagingPlugin NSDictionaryFromUNNotification:notification];
     if(gimbalNotificationUserInfo != nil) {
-        notificationDict = gimbalNotificationUserInfo;
+        notificationDict = [FLTFirebaseMessagingPlugin remoteMessageUserInfoToDict:gimbalNotificationUserInfo];
     }
     // Don't send an event if contentAvailable is true - application:didReceiveRemoteNotification
     // will send the event for us, we don't want to duplicate them.
@@ -379,7 +379,7 @@ NSString *const kMessagingPresentationOptionsUserDefaults =
     NSDictionary *notificationDict =
         [FLTFirebaseMessagingPlugin remoteMessageUserInfoToDict:remoteNotification];
     if (gimbalNotificationUserInfo != nil) {
-        notificationDict = gimbalNotificationUserInfo;
+        notificationDict = [FLTFirebaseMessagingPlugin remoteMessageUserInfoToDict:gimbalNotificationUserInfo];
     }
     [_channel invokeMethod:@"Messaging#onMessageOpenedApp" arguments:notificationDict];
     @synchronized(self) {
