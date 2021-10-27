@@ -7,6 +7,7 @@
 #import <objc/message.h>
 
 #import "FLTFirebaseMessagingPlugin.h"
+#import <Gimbal/Gimbal.h>
 
 NSString *const kFLTFirebaseMessagingChannelName = @"plugins.flutter.io/firebase_messaging";
 
@@ -374,6 +375,12 @@ NSString *const kMessagingPresentationOptionsUserDefaults =
     API_AVAILABLE(macos(10.14), ios(10.0)) {
   NSDictionary *remoteNotification = response.notification.request.content.userInfo;
   NSDictionary *gimbalNotificationUserInfo = [self rebuildUserInfo:response.notification];
+  GMBLCommunication *communication = [GMBLCommunicationManager communicationForNotificationResponse:response];
+  if (gimbalNotificationUserInfo != nil && communication != nil && communication.URL != nil) {
+    NSMutableDictionary* tempGimbalNotificationUserInfo = [NSMutableDictionary dictionaryWithDictionary:gimbalNotificationUserInfo];
+    [tempGimbalNotificationUserInfo setValue:communication.URL forKey:@"URL"];
+    gimbalNotificationUserInfo = tempGimbalNotificationUserInfo;
+  }
   // We only want to handle FCM notifications.
   if (remoteNotification[@"gcm.message_id"] || gimbalNotificationUserInfo != nil) {
     NSDictionary *notificationDict =
