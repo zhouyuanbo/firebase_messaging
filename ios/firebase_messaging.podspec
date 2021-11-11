@@ -31,7 +31,6 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '10.0'
 
   s.dependency 'Flutter'
-  s.dependency 'Gimbal', '2.88'
   s.dependency 'firebase_core'
   s.dependency 'Firebase/Messaging', firebase_sdk_version
   s.static_framework = true
