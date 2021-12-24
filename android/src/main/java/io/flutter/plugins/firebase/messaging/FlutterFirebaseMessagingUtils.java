@@ -7,6 +7,7 @@ package io.flutter.plugins.firebase.messaging;
 import android.app.ActivityManager;
 import android.app.KeyguardManager;
 import android.content.Context;
+import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.RemoteMessage;
 import java.util.Arrays;
