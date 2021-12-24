@@ -145,7 +145,7 @@ public class FlutterFirebaseMessagingPlugin extends BroadcastReceiver
                     intent.getParcelableExtra(FlutterFirebaseMessagingUtils.EXTRA_REMOTE_MESSAGE);
             if (message == null) return;
 
-            Map<String, Object> content = FlutterFirebaseMessagingUtils.remoteMessageToMap(message);
+            content = FlutterFirebaseMessagingUtils.remoteMessageToMap(message);
         }
 
       channel.invokeMethod("Messaging#onMessage", content);
