@@ -49,7 +49,7 @@ class FlutterFirebaseMessagingUtils {
     String body = intent.getStringExtra("body");
     notificationMap.put("body", body);
     RemoteMessage message =
-            intent.getParcelableExtra(FlutterFirebaseMessagingService.EXTRA_REMOTE_MESSAGE);
+            intent.getParcelableExtra(EXTRA_REMOTE_MESSAGE);
 
     if (message != null){
       for (String s : message.getData().keySet()) {
