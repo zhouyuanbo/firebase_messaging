@@ -139,7 +139,7 @@ public class FlutterFirebaseMessagingPlugin extends BroadcastReceiver
         boolean isGimbal = intent.getBooleanExtra(GIMBAL_FLAG, false);
 
         if (isGimbal){
-            content = FlutterFirebaseMessagingUtils.parseGimbalMessage(intent);
+            content = parseGimbalMessage(intent);
         }else {
             RemoteMessage message =
                     intent.getParcelableExtra(FlutterFirebaseMessagingUtils.EXTRA_REMOTE_MESSAGE);
