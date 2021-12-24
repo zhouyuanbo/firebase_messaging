@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import android.preference.PreferenceManager;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
@@ -47,6 +48,7 @@ public class FlutterFirebaseMessagingPlugin extends BroadcastReceiver
   private MethodChannel channel;
   private Activity mainActivity;
   private RemoteMessage initialMessage;
+  public static final String GIMBAL_FLAG = "GIMBAL_FLAG";
 
   @SuppressWarnings("unused")
   public static void registerWith(Registrar registrar) {
@@ -149,7 +151,31 @@ public class FlutterFirebaseMessagingPlugin extends BroadcastReceiver
     }
   }
 
-  private Task<Void> deleteToken() {
+    @NonNull
+    private Map<String, Object> parseGimbalMessage(Intent intent) {
+        Map<String, Object> content = new HashMap<>();
+
+        Map<String, Object> notificationMap = new HashMap<>();
+
+        String title = intent.getStringExtra("title");
+        notificationMap.put("title", title);
+
+        String body = intent.getStringExtra("body");
+        notificationMap.put("body", body);
+        RemoteMessage message =
+                intent.getParcelableExtra(FlutterFirebaseMessagingService.EXTRA_REMOTE_MESSAGE);
+        if (message!=null){
+            for (String s : message.getData().keySet()) {
+                Log.d("TAG","FirebaseMessagePlugin--key="+s);
+            }
+            content.put("data", message.getData());
+        }
+        content.put("notification", notificationMap);
+        return content;
+    }
+
+
+    private Task<Void> deleteToken() {
     return Tasks.call(
         cachedThreadPool,
         () -> {
