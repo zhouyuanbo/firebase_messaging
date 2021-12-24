@@ -164,7 +164,7 @@ public class FlutterFirebaseMessagingPlugin extends BroadcastReceiver
         String body = intent.getStringExtra("body");
         notificationMap.put("body", body);
         RemoteMessage message =
-                intent.getParcelableExtra(FlutterFirebaseMessagingService.EXTRA_REMOTE_MESSAGE);
+                intent.getParcelableExtra(FlutterFirebaseMessagingUtils.EXTRA_REMOTE_MESSAGE);
         if (message!=null){
             for (String s : message.getData().keySet()) {
                 Log.d("TAG","FirebaseMessagePlugin--key="+s);
