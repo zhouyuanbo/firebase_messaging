@@ -127,6 +127,9 @@ public class FlutterFirebaseMessagingPlugin extends BroadcastReceiver
   public void onReceive(Context context, Intent intent) {
     String action = intent.getAction();
 
+    Log.d("FlutterFirebaseMessagingPlugin.onReceive action: " + action);
+    Log.d("action.equals(FlutterFirebaseMessagingUtils.ACTION_REMOTE_MESSAGE): " + action.equals(FlutterFirebaseMessagingUtils.ACTION_REMOTE_MESSAGE));
+
     if (action == null) {
       return;
     }
@@ -138,8 +141,11 @@ public class FlutterFirebaseMessagingPlugin extends BroadcastReceiver
         Map<String, Object> content;
         boolean isGimbal = intent.getBooleanExtra(GIMBAL_FLAG, false);
 
+        Log.d("FlutterFirebaseMessagingPlugin.onReceive isGimbal: " + isGimbal);
+
         if (isGimbal){
             content = parseGimbalMessage(intent);
+            Log.d("FlutterFirebaseMessagingPlugin.onReceive content: " + content.toString());
         }else {
             RemoteMessage message =
                     intent.getParcelableExtra(FlutterFirebaseMessagingUtils.EXTRA_REMOTE_MESSAGE);
@@ -148,6 +154,7 @@ public class FlutterFirebaseMessagingPlugin extends BroadcastReceiver
             content = FlutterFirebaseMessagingUtils.remoteMessageToMap(message);
         }
 
+        Log.d("FlutterFirebaseMessagingPlugin.onReceive invokeMethod Messaging#onMessage");
       channel.invokeMethod("Messaging#onMessage", content);
     }
   }
