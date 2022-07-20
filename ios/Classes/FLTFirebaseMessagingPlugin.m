@@ -333,7 +333,7 @@ NSString *const kMessagingPresentationOptionsUserDefaults =
     API_AVAILABLE(macos(10.14), ios(10.0)) {
   NSDictionary *gimbalNotificationUserInfo = [self rebuildUserInfo:notification];
   // We only want to handle FCM notifications.
-  if (notification.request.content.userInfo[@"gcm.message_id"] || gimbalNotificationUserInfo != nil) {
+  if (notification.request.content.userInfo[@"gcm.message_id"] || gimbalNotificationUserInfo != nil || notification.request.content.userInfo[@"kNotificationChannelType"]) {
     NSDictionary *notificationDict =
         [FLTFirebaseMessagingPlugin NSDictionaryFromUNNotification:notification];
     if(gimbalNotificationUserInfo != nil) {
@@ -367,7 +367,11 @@ NSString *const kMessagingPresentationOptionsUserDefaults =
         presentationOptions |= UNNotificationPresentationOptionSound;
       }
     }
-    completionHandler(presentationOptions);
+    if (notification.request.content.userInfo[@"gcm.message_id"]) {
+        completionHandler(presentationOptions);
+    } else {
+        completionHandler(UNNotificationPresentationOptionAlert);
+    }
   }
 }
 
@@ -379,7 +383,7 @@ NSString *const kMessagingPresentationOptionsUserDefaults =
   NSDictionary *remoteNotification = response.notification.request.content.userInfo;
   NSDictionary *gimbalNotificationUserInfo = [self rebuildUserInfo:response.notification];
   // We only want to handle FCM notifications.
-  if (remoteNotification[@"gcm.message_id"] || gimbalNotificationUserInfo != nil) {
+  if (remoteNotification[@"gcm.message_id"] || gimbalNotificationUserInfo != nil || remoteNotification[@"kNotificationChannelType"]) {
     NSDictionary *notificationDict =
         [FLTFirebaseMessagingPlugin remoteMessageUserInfoToDict:remoteNotification];
     if (gimbalNotificationUserInfo != nil) {
