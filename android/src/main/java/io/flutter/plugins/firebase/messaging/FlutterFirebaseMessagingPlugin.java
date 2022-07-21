@@ -21,6 +21,7 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.RemoteMessage;
+
 import io.flutter.embedding.engine.FlutterShellArgs;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -419,6 +420,25 @@ public class FlutterFirebaseMessagingPlugin extends BroadcastReceiver
     String messageId = intent.getExtras().getString("google.message_id");
     if (messageId == null) messageId = intent.getExtras().getString("message_id");
     if (messageId == null) {
+        String userInfo = (String)intent.getExtras().getString("userInfo");
+
+        if(userInfo != null){
+//            HashMap<String, Object> map = new Gson().fromJson(userInfo, HashMap.class);
+
+            HashMap<String, String> data = new HashMap<String, String>();
+            data.put("openAppData", userInfo);
+
+            RemoteMessage remoteMessage = new RemoteMessage.Builder(GIMBAL_FLAG).setData(data).build();
+
+            initialMessage = remoteMessage;
+
+            channel.invokeMethod(
+                    "Messaging#onMessageOpenedApp",
+                    FlutterFirebaseMessagingUtils.remoteMessageToMap(remoteMessage));
+            mainActivity.setIntent(intent);
+            return true;
+        }
+
       return false;
     }
 
